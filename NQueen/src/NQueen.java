@@ -6,6 +6,7 @@ import java.util.Scanner;
  */
 public class NQueen {
 	public long solutionNum = 0;
+	public static boolean showMap = true;
 	public static void main(String[] args){
 		showTime();
 	}
@@ -21,16 +22,49 @@ public class NQueen {
 				int option = input.nextInt();
 				switch(option){
 				case 1:{
-					System.out.println("请输入皇后数：");
-					int queenNum = input.nextInt();
-					nqueen.placeNQueen_iteration(queenNum);
+					int binaryType = 3;
+					while(binaryType > 2){
+						System.out.println("请选择位运算求解类型：");
+						System.out.println("1、普通求解      2、对称求法");
+						binaryType = input.nextInt();
+					}
+					int queenNum = 0;
+					while(queenNum < 2 || queenNum > ((1 << 31) - 1)){
+						System.out.println("请输入皇后数(1 < n <" + ((1 << 31) - 1) + ")：");
+						queenNum = input.nextInt();
+					}
+					long startTime = System.currentTimeMillis();
+				
+					if(binaryType == 1){
+						nqueen.placeNQueen_iteration(queenNum);
+					}else{
+						nqueen.placeNQueen_iteration_sym(queenNum);
+					}
+					long endTime = System.currentTimeMillis();
+					System.out.println("耗时： " + (endTime - startTime) + "ms");
 					showResult(nqueen.solutionNum);
 					break;
 				}
 				case 2:{
-					System.out.println("请输入皇后数：");
-					int queenNum = input.nextInt();
-					nqueen.placeNQueen_recursion(queenNum);
+					int binaryType = 3;
+					while(binaryType > 2){
+						System.out.println("请选择位运算求解类型：");
+						System.out.println("1、普通求解      2、对称求法");
+						binaryType = input.nextInt();
+					}
+					int queenNum = 0;
+					while(queenNum < 2 || queenNum > ((1 << 31) - 1)){
+						System.out.println("请输入皇后数(1 < n <" + ((1 << 31) - 1) + ")：");
+						queenNum = input.nextInt();
+					}
+					long startTime = System.currentTimeMillis();
+					if(binaryType == 1){
+						nqueen.placeNQueen_recursion(queenNum);;
+					}else{
+						nqueen.placeNQueen_recursion_sym(queenNum);;
+					}
+					long endTime = System.currentTimeMillis();
+					System.out.println("耗时：" + (endTime - startTime) + "ms");
 					showResult(nqueen.solutionNum);
 					
 					break;
@@ -44,15 +78,18 @@ public class NQueen {
 					}
 					
 					int queenNum = 0;
-					while(queenNum < 2){
-						System.out.println("请输入皇后数(> 1)：");
+					while(queenNum < 2 || queenNum > 64){
+						System.out.println("请输入皇后数(1 < n < 65)：");
 						queenNum = input.nextInt();
 					}
+					long startTime = System.currentTimeMillis();
 					if(binaryType == 1){
 						nqueen.placeNQueen_binary(queenNum);
 					}else{
 						nqueen.placeNQueen_binary_symmetry(queenNum);
 					}
+					long endTime = System.currentTimeMillis();
+					System.out.println("耗时：" + (endTime - startTime) + "ms");
 					
 					showResult(nqueen.solutionNum);
 					break;
@@ -62,6 +99,7 @@ public class NQueen {
 					break;
 				}
 				case 5:{
+					System.out.println("感谢您的使用 &(@-@)&");
 					return;
 				}default:{
 					continue;
@@ -100,7 +138,65 @@ public class NQueen {
 				//行越界：已放置完所有行的皇后，一个解生成
 				if(row > queenNum){
 					solutionNum ++;
-					showQueenPositions(cols,queenNum,solutionNum);
+					if(showMap){
+						showQueenPositions(cols,queenNum,solutionNum);
+					}
+				}
+				//列越界：回溯到上一行，皇后往后一列位置放置
+				//|x|x|x|o| |
+				//|x|x|x|x|x|*
+				//行越界：找到一个解，但是仍需要将皇后放在最后一行其他位置进行判断
+				//|o| | | | |
+				//|x|x|o|-|-|
+				row --;
+				cols[row] ++;
+			}
+		}
+	}
+	
+	//非递归实现--利用对称
+	public void placeNQueen_iteration_sym(int queenNum){
+		//1~row放置皇后，row + 1用于越界
+		int[] cols = new int[queenNum+2];
+		solutionNum = 0;
+		cols[1] = 1;
+		int halfQueenNum = queenNum >> 1;
+		//对所有行进行遍历，也就是将每个皇后逐行放置
+		while(cols[1] <= halfQueenNum){
+			cols[2] = 1;
+			queenIter(true,2,cols,queenNum);
+		}
+		if((queenNum & 1) != 0){
+			cols[2] = 1;
+			cols[1] = halfQueenNum + 1;
+			queenIter(false,2,cols,queenNum);
+		}
+	}
+	
+	public void queenIter(boolean isSym,int row,int[] cols,int queenNum){
+		while(row > 1){
+			if(row <= queenNum && cols[row] <= queenNum ){
+				//放入的元素位置(row,cols[row])
+				if(isAllowPosition(row,cols[row],cols)){
+					//如果该位置可以放置皇后
+					//则开始放置下一行的皇后
+					row ++;
+					//每一行的皇后都从第一列的位置开始放置
+					cols[row] = 1;
+				}else{
+					//该位置节点不可放置
+					//则将节点放置到同行的下一位置
+					//越界问题会在下一次循环中解决
+					cols[row] ++;
+				}
+			}else{
+				//越界:行越界和列越界
+				//行越界：已放置完所有行的皇后，一个解生成
+				if(row > queenNum){
+					solutionNum ++;
+					if(showMap){
+						showQueenPositions_sym(isSym,cols,queenNum,solutionNum);
+					}
 				}
 				//列越界：回溯到上一行，皇后往后一列位置放置
 				//|x|x|x|o| |
@@ -118,14 +214,17 @@ public class NQueen {
 	public void placeNQueen_recursion(int queenNum){
 		solutionNum = 0;
 		int[] cols = new int[queenNum + 2];
-		placeQueen(1,cols,queenNum);
+		placeQueen(false,1,cols,queenNum);
 	}
 	
-	public void placeQueen(int row, int[] cols, int queenNum){
+	public void placeQueen(boolean isSym,int row, int[] cols, int queenNum){
 		if(row > queenNum){
 			//行越界：找到一个解
 			solutionNum ++;
-			showQueenPositions(cols,queenNum,solutionNum);
+			if(showMap){
+//				showQueenPositions(cols,queenNum,solutionNum);
+				showQueenPositions_sym(isSym,cols,queenNum,solutionNum);
+			}
 		}else{
 			//对该行的所有位置进行遍历
 			for(int col = 1; col <= queenNum; col ++){
@@ -133,10 +232,26 @@ public class NQueen {
 				if(isAllowPosition(row,col,cols)){
 					//如果位置可放，则放置，并找下一行的皇后
 					cols[row] = col;
-					placeQueen(row + 1,cols,queenNum);
+					placeQueen(isSym,row + 1,cols,queenNum);
 				}
 				//位置不可放，放下一列
 			}
+		}
+	}
+	
+	//递归--利用对称将时间减半
+	public void placeNQueen_recursion_sym(int queenNum){
+		solutionNum = 0;
+		int[] cols = new int[queenNum + 2];
+		int halfQueenNum = queenNum >> 1;
+		cols[1] = 1;
+		while(cols[1] <= halfQueenNum){
+			placeQueen(true,2,cols,queenNum);
+			cols[1] ++;
+		}
+		if((queenNum & 1) != 0){
+			cols[1] = halfQueenNum + 1;
+			placeQueen(false,2,cols,queenNum);
 		}
 	}
 	
@@ -201,7 +316,9 @@ public class NQueen {
 		}else{
 			//horizontalLine的所有位都为1，即找到了一个成功的布局，回溯 
 			solutionNum ++;
-			showQueenPositions_sym(isSym,cols,row-1,solutionNum);
+			if(showMap){
+				showQueenPositions_sym(isSym,cols,row-1,solutionNum);
+			}
 		}
 	}
 	
@@ -215,6 +332,18 @@ public class NQueen {
 	//其他函数
 
 	public static void setting(){
+		System.out.println("是否需要显示?[Y/N]");
+		Scanner input = new Scanner(System.in);
+		String option = "";
+		while(!option.equals("y") && !option.equals("n") ){
+			option = input.nextLine();
+			option = option.toLowerCase();
+		}
+		if(option.equals("y")){
+			showMap = true;
+		}else{
+			showMap = false;
+		}
 		
 	}
 	public boolean isAllowPosition(int row,int col,int[] cols){
@@ -297,7 +426,7 @@ public class NQueen {
 				System.out.print("|x");
 				col ++;
 			}
-			System.out.print("|O|");
+			System.out.print("|o|");
 			col ++;
 			while(col <= queenNum){
 				System.out.print("x|");
