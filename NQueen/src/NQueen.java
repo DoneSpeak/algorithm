@@ -18,7 +18,7 @@ public class NQueen {
 		while(true){
 			while(true){
 				System.out.println("请选择您想要的类型：");
-				System.out.println("1. 迭代求解     2. 递归求解      3. 位运算求解      4. 设置      5. 退出");
+				System.out.println("1. 迭代求解     2. 递归求解      3. 位运算求解      4. 设置     5、测试    6. 退出");
 				int option = input.nextInt();
 				switch(option){
 				case 1:{
@@ -99,6 +99,43 @@ public class NQueen {
 					break;
 				}
 				case 5:{
+					while(true){
+						int queenNum = 0;
+						while(queenNum < 2){
+							System.out.println("请输入皇后数(>1)：");
+							queenNum = input.nextInt();
+						}
+						System.out.println("请输入按照第一行到最后一行的顺序输入皇后列数（列数从1开始）");
+						int[] cols  = new int[queenNum + 2];
+						for(int i = 1; i <= queenNum; i ++){
+							int col = input.nextInt();
+							while(col < 1 || col > queenNum){
+								System.out.println("皇后位置应大于0小于" + queenNum);
+								col = input.nextInt();
+							}
+							cols[i] = col;
+						}
+						
+						if(!nqueen.judgeIsRight(cols,queenNum)){
+							System.out.println("该布局不是有效布局！");
+						}else{
+							System.out.println("恭喜！&&@-@&&");
+							System.out.println("该布局是有效布局");
+						}
+						String cont = "A";
+						while((!cont.equals("Y")) && (!cont.equals("N"))){
+							System.out.println("是否继续[Y/N]");
+							cont = input.nextLine();
+							cont = input.nextLine();
+							cont = cont.toUpperCase();
+						}
+						if(cont.equals("N")){
+							break;
+						}
+					}
+					break;
+				}
+				case 6:{
 					System.out.println("感谢您的使用 &(@-@)&");
 					return;
 				}default:{
@@ -140,6 +177,8 @@ public class NQueen {
 					solutionNum ++;
 					if(showMap){
 						showQueenPositions(cols,queenNum,solutionNum);
+					}else{
+						judgeIsRight(cols,queenNum);
 					}
 				}
 				//列越界：回溯到上一行，皇后往后一列位置放置
@@ -196,6 +235,11 @@ public class NQueen {
 					solutionNum ++;
 					if(showMap){
 						showQueenPositions_sym(isSym,cols,queenNum,solutionNum);
+					}else{
+						judgeIsRight(cols,queenNum);
+						if(isSym){
+							solutionNum ++;
+						}
 					}
 				}
 				//列越界：回溯到上一行，皇后往后一列位置放置
@@ -224,6 +268,11 @@ public class NQueen {
 			if(showMap){
 //				showQueenPositions(cols,queenNum,solutionNum);
 				showQueenPositions_sym(isSym,cols,queenNum,solutionNum);
+			}else{
+				judgeIsRight(cols,queenNum);
+				if(isSym){
+					solutionNum ++;
+				}
 			}
 		}else{
 			//对该行的所有位置进行遍历
@@ -284,6 +333,7 @@ public class NQueen {
 			cols[1] = queenNum - getNumOfZeroInRight(rightPlace);
 			placeBinary(true,cols,2,queenNumSigns,rightPlace,rightPlace >> 1,rightPlace << 1);
 		}
+		
 		if((queenNum & 1) != 0){
 			//奇数个皇后，中间位置需要判断
 			cols[1] = queenNum >> 1 + 1;
@@ -318,6 +368,11 @@ public class NQueen {
 			solutionNum ++;
 			if(showMap){
 				showQueenPositions_sym(isSym,cols,row-1,solutionNum);
+			}else{
+				judgeIsRight(cols,cols.length - 2);
+				if(isSym){
+					solutionNum ++;
+				}
 			}
 		}
 	}
@@ -332,10 +387,10 @@ public class NQueen {
 	//其他函数
 
 	public static void setting(){
-		System.out.println("是否需要显示?[Y/N]");
 		Scanner input = new Scanner(System.in);
 		String option = "";
 		while(!option.equals("y") && !option.equals("n") ){
+			System.out.println("是否需要显示?[Y/N]");
 			option = input.nextLine();
 			option = option.toLowerCase();
 		}
@@ -412,6 +467,9 @@ public class NQueen {
 	}
 	
 	public void showQueenPositions(int[] cols,int queenNum,long solutionNo){
+		if(!judgeIsRight(cols,queenNum)){
+			System.out.println("算法有误！");
+		}
 		System.out.println("-----------------[第" + solutionNo + "个解]----------------");
 		for(int row = 1; row <= queenNum; row ++){
 			int col = 1;
@@ -444,6 +502,9 @@ public class NQueen {
 	
 
 	public void showQueenPositions_sym(boolean isSym,int[] cols,int queenNum,long solutionNo){
+		if(!judgeIsRight(cols,queenNum)){
+			System.out.println("算法有误！");
+		}
 		int time = 1;
 		if(isSym){
 			time ++;
@@ -476,5 +537,35 @@ public class NQueen {
 				solutionNo ++;	
 			}
 		}
+	}
+	
+	public void showQueenPositions_forText(int[] cols,int queenNum){
+		System.out.println("-------测试布局------");
+		for(int row = 1; row <= queenNum; row ++){
+			int col = 1;
+			col = 1;
+			while(col < cols[row]){
+				System.out.print("|x");
+				col ++;
+			}
+			System.out.print("|o|");
+			col ++;
+			while(col <= queenNum){
+				System.out.print("x|");
+				col ++;
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+	
+	public boolean judgeIsRight(int[] cols, int queenNum){
+		showQueenPositions_forText(cols,queenNum);
+		for(int row = 1; row <= queenNum; row ++){			
+			if(!isAllowPosition(row,cols[row],cols)){
+				return false;
+			}
+		}
+		return true;
 	}
 }
