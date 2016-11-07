@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="algorithm_sort/src"/>
+	<classpathentry kind="src" path="minDistPoints/src"/>
+	<classpathentry kind="src" path="NQueen/src"/>
+	<classpathentry kind="lib" path="algorithm_sort/lib/poi-3.14-20160307.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="NQueen/bin"/>
+</classpath>
